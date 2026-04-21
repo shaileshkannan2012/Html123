@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Einfaches Jump Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; overflow: hidden; }
+        #gameCanvas { border: 2px solid #333; background-color: #f0f0f0; margin-top: 50px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+
+    <h1>Jump Game</h1>
+    <p>Drücke <b>Leertaste</b> zum Springen!</p>
+    <canvas id="gameCanvas" width="600" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let score = 0;
+        let isJumping = false;
+        let gameActive = true;
+
+        // Spieler-Objekt
+        const player = { x: 50, y: 150, w: 30, h: 30, dy: 0, jumpForce: 12, gravity: 0.6 };
+
+        // Hindernis-Objekt
+        const obstacle = { x: 600, y: 160, w: 20, h: 40, speed: 5 };
+
+        function draw() {
+            if (!gameActive) return;
+
+            // Hintergrund löschen
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Spieler zeichnen (Blau)
+            ctx.fillStyle = "#3498db";
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+
+            // Hindernis zeichnen (Rot)
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+
+            // Boden zeichnen
+            ctx.beginPath();
+            ctx.moveTo(0, 180);
+            ctx.lineTo(600, 180);
+            ctx.stroke();
+
+            // Physik für Sprung
+            if (isJumping) {
+                player.dy += player.gravity;
+                player.y += player.dy;
+
+                if (player.y >= 150) {
+                    player.y = 150;
+                    isJumping = false;
+                    player.dy = 0;
+                }
+            }
+
+            // Hindernis bewegen
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -20) {
+                obstacle.x = 600;
+                score++;
+                obstacle.speed += 0.2; // Schwierigkeit erhöhen
+            }
+
+            // Kollisionserkennung
+            if (player.x < obstacle.x + obstacle.w &&
+                player.x + player.w > obstacle.x &&
+                player.y < obstacle.y + obstacle.h &&
+                player.y + player.h > obstacle.y) {
+                alert("Game Over! Score: " + score);
+                resetGame();
+            }
+
+            // Score anzeigen
+            ctx.fillStyle = "#333";
+            ctx.fillText("Score: " + score, 10, 20);
+
+            requestAnimationFrame(draw);
+        }
+
+        function jump() {
+            if (!isJumping) {
+                isJumping = true;
+                player.dy = -player.jumpForce;
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            obstacle.x = 600;
+            obstacle.speed = 5;
+            player.y = 150;
+        }
+
+        // Steuerung
+        window.addEventListener("keydown", (e) => { if (e.code === "Space") jump(); });
+        canvas.addEventListener("mousedown", jump);
+
+        draw();
+    </script>
+</body>
+</html>
 
